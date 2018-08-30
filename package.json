@@ -1,0 +1,21 @@
+{
+  "name": "api-restful-albums",
+  "version": "1.0.0",
+  "description": "Proyecto api rest para app de albums",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "Manuel Luis Soler Quesada",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "connect-multiparty": "^2.0.0",
+    "express": "^4.16.3",
+    "mongoose": "^4.6.6"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.4"
+  }
+}
