@@ -49,7 +49,7 @@ function saveAlbum(req, res) {
         if (albumStored){
             return res.status(200).send({ album: albumStored });
         } else {
-            return res.status(200).send({ message: 'No se ha guardado el album' });
+            return res.status(404).send({ message: 'No se ha guardado el album' });
         }
 
     });
@@ -67,7 +67,7 @@ function updateAlbum(req, res) {
         if (albumUpdated){
             return res.status(200).send({ album: albumUpdated });
         } else {
-            return res.status(200).send({ message: 'No se ha actualizado el album' });
+            return res.status(404).send({ message: 'No se ha actualizado el album' });
         }        
     });
 
@@ -84,7 +84,7 @@ function deleteAlbum(req, res) {
         if (albumDeleted){
             return res.status(200).send({ album: albumDeleted });
         } else {
-            return res.status(200).send({ message: 'No se ha eliminado el album' });
+            return res.status(404).send({ message: 'No se ha eliminado el album' });
         }        
     });
 

@@ -1,5 +1,6 @@
 'use strict'
 
+let path = require('path');
 let Image = require('../models/image');
 let Album = require('../models/album');
 
@@ -28,18 +29,38 @@ function getImage(req, res) {
 }
 
 function getImages(req, res) {
+    let albumId = req.params.album;
+    let find = null;
 
-    Image.find({}, (err, images) => {
-        if (err) {
+    if (albumId){
+        // Obtenemos las imagenes del album
+        find = Image.find({album: albumId}).sort('title');        
+    } else {
+        // Obtenemos todas las imagenes (orden titulo descendente)
+        find = Image.find({}).sort('title');
+    }
+
+    find.exec((err, images) => {
+        if (err){
             return res.status(500).send({ message: 'Error en la petición' });
         }
 
-        if (images) {
-            return res.status(200).send({ images });
+        if (images) {                
+            Album.populate(images, {path: 'album'}, (err, images) => {
+                if (err) {
+                    return res.status(500).send({ message: 'Error en la petición' });
+                }
+
+                if (images){
+                    return res.status(200).send({ images });    
+                }
+            }); 
+
+            //return res.status(200).send({ images: images });
         } else {
             return res.status(404).send({ message: 'No se han encontrado imagenes' });
         }
-    });
+    });        
 }
 
 function saveImage(req, res) {
@@ -59,45 +80,71 @@ function saveImage(req, res) {
         if (imageStored){
             return res.status(200).send({ image: imageStored });
         } else {
-            return res.status(200).send({ message: 'No se ha guardado la imagen' });
+            return res.status(404).send({ message: 'No se ha guardado la imagen' });
         }
 
     });
 }
 
 function updateImage(req, res) {
-    let albumId = req.params.id;
+    let imageId = req.params.id;
     let update = req.body;
 
-    Album.findByIdAndUpdate(albumId, update, (err, albumUpdated) => {
+    Image.findByIdAndUpdate(imageId, update, (err, imageUpdated) => {
         if (err){
-            return res.status(500).send({message: 'Error al actualizar el album'});
+            return res.status(500).send({message: 'Error al actualizar la imagen'});
         }
 
-        if (albumUpdated){
-            return res.status(200).send({ album: albumUpdated });
+        if (imageUpdated){
+            return res.status(200).send({ image: imageUpdated });
         } else {
-            return res.status(200).send({ message: 'No se ha actualizado el album' });
+            return res.status(404).send({ message: 'No se ha actualizado la imagen' });
+        } 
+    });
+}
+
+function deleteImage(req, res) {
+    let imageId = req.params.id;
+
+    Image.findByIdAndRemove(imageId, (err, imageDeleted) => {
+        if (err){
+            return res.status(500).send({message: 'Error al eliminar la imagen'});
+        }
+
+        if (imageDeleted){
+            return res.status(200).send({ image: imageDeleted });
+        } else {
+            return res.status(404).send({ message: 'No se ha eliminado la imagen' });
         }        
     });
 
 }
 
-function deleteImage(req, res) {
-    let albumId = req.params.id;
+function uploadImage(req, res){
+    let imageId = req.params.id;
+    let fileName = 'n/a';
 
-    Album.findByIdAndRemove(albumId, (err, albumDeleted) => {
-        if (err){
-            return res.status(500).send({message: 'Error al eliminar el album'});
-        }
+    if (req.files){
+        // Nos llega un parámetro que llama image y obtenemos el nombre del fichero
+        let filePath = req.files.image.path;
+        let fileSplit = filePath.split('\\');
+        // TODO: no obtengo correctamente el nombre del fichero
+        fileName  = filePath[2];
 
-        if (albumDeleted){
-            return res.status(200).send({ album: albumDeleted });
-        } else {
-            return res.status(200).send({ message: 'No se ha eliminado el album' });
-        }        
-    });
-
+        Image.findByIdAndUpdate(imageId, {picture: fileName}, (err, imageUpdated) => {
+            if (err){
+                return res.status(500).send({message: 'Error al actualizar la imagen'});
+            }
+    
+            if (imageUpdated){
+                return res.status(200).send({ image: imageUpdated });
+            } else {
+                return res.status(404).send({ message: 'No se ha actualizado la imagen' });
+            } 
+        });        
+    } else {
+        return res.status(200).send({ message: 'Falta enviar la imagen' });
+    }
 }
 
 module.exports = {
@@ -105,5 +152,6 @@ module.exports = {
     getImages,
     saveImage,
     updateImage,
-    deleteImage
+    deleteImage,
+    uploadImage
 }
