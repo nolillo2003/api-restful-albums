@@ -1,6 +1,7 @@
 'use strict'
 
 let path = require('path');
+let fs = require('fs');
 let Image = require('../models/image');
 let Album = require('../models/album');
 
@@ -128,8 +129,8 @@ function uploadImage(req, res){
         // Nos llega un parámetro que llama image y obtenemos el nombre del fichero
         let filePath = req.files.image.path;
         let fileSplit = filePath.split('\\');
-        // TODO: no obtengo correctamente el nombre del fichero
-        fileName  = filePath[2];
+
+        fileName  = fileSplit[1];
 
         Image.findByIdAndUpdate(imageId, {picture: fileName}, (err, imageUpdated) => {
             if (err){
@@ -147,11 +148,26 @@ function uploadImage(req, res){
     }
 }
 
+function getImageFile(req, res){
+    let imageFile = req.params.imageFile;
+
+    fs.exists('./uploads/'+imageFile, (exists) => {
+        if (exists){
+            res.sendFile(path.resolve('./uploads/'+imageFile));
+        } else {
+            return res.status(404).send({ message: 'No exsite la imagen' });
+        }
+    });
+    
+    
+}
+
 module.exports = {
     getImage,
     getImages,
     saveImage,
     updateImage,
     deleteImage,
-    uploadImage
+    uploadImage,
+    getImageFile
 }
