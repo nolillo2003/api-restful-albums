@@ -113,6 +113,13 @@ function deleteImage(req, res) {
         }
 
         if (imageDeleted){
+            // Borramos físicamente la imagen
+            fs.unlink('./uploads/'+imageDeleted.picture, (error) => {
+                if (error) {
+                    console.log('Error borrando la imagen');
+                }
+            })
+
             return res.status(200).send({ image: imageDeleted });
         } else {
             return res.status(404).send({ message: 'No se ha eliminado la imagen' });
